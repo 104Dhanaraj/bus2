@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,12 +37,12 @@ import java.util.Set;
 
 public class BusStopsActivity extends AppCompatActivity {
     private static final String TAG = "BusStopsActivity";
-    private TextView txtSelectedBus, txtFare, txtTotalTime;
+    private TextView txtSelectedBus, txtTotalTime;
     private ListView stopListView;
     private List<Stop> stopList;
     private String selectedSource, selectedDestination;
     private Bus selectedBus;
-    private StopListAdapter stopListAdapter; // Adapter instance
+    private StopListAdapter stopListAdapter;
 
     private FusedLocationProviderClient locationClient;
     private LocationCallback locationCallback;
@@ -49,6 +50,7 @@ public class BusStopsActivity extends AppCompatActivity {
 
     private static final float STOP_RADIUS = 150.0f;
     private Set<String> announcedStops = new HashSet<>();
+    private Button startButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,9 +58,9 @@ public class BusStopsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bus_stops);
 
         txtSelectedBus = findViewById(R.id.txt_selected_bus);
-//        txtFare = findViewById(R.id.txt_fare);
         txtTotalTime = findViewById(R.id.txt_total_time);
         stopListView = findViewById(R.id.list_stops);
+        startButton = findViewById(R.id.btn_start);  // Corrected the button ID
 
         textToSpeech = new TextToSpeech(this, status -> {
             if (status == TextToSpeech.SUCCESS) {
@@ -80,7 +82,6 @@ public class BusStopsActivity extends AppCompatActivity {
         }
 
         txtSelectedBus.setText("Bus: " + selectedBus.getBusName());
-//        txtFare.setText("Fare: ₹" + selectedBus.getFare());
         txtTotalTime.setText("Time: " + selectedBus.getTotalTime() + " min");
 
         loadStopsForSelectedRoute();
@@ -88,8 +89,8 @@ public class BusStopsActivity extends AppCompatActivity {
 
         locationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        Log.d(TAG, "Starting location updates...");
-        startLocationUpdates();
+        // Wait until the user clicks the start button to start location updates
+        startButton.setOnClickListener(v -> startLocationUpdates());  // Start location updates on button click
     }
 
     private void loadStopsForSelectedRoute() {
@@ -129,16 +130,19 @@ public class BusStopsActivity extends AppCompatActivity {
     }
 
     private void startLocationUpdates() {
+        // Check permissions
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
 
+        // Create location request
         LocationRequest locationRequest = LocationRequest.create()
                 .setInterval(5000)
                 .setFastestInterval(2000)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+        // Location callback to get location updates
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -153,6 +157,7 @@ public class BusStopsActivity extends AppCompatActivity {
             }
         };
 
+        // Request location updates
         locationClient.requestLocationUpdates(locationRequest, locationCallback, null);
         Log.d(TAG, "Location updates started");
     }
@@ -197,32 +202,16 @@ public class BusStopsActivity extends AppCompatActivity {
         runOnUiThread(() -> stopListAdapter.updateSelectedStop(stopName));
     }
 
-
     private void updateFareAndTime(Stop currentStop) {
-        // Find the index of the current stop
-        int stopIndex = stopList.indexOf(currentStop);
-        if (stopIndex == -1) return; // Stop not found, exit
-
-        // Assuming total time is distributed across all stops
+        // Assuming that total time is divided evenly among stops
         int totalTime = selectedBus.getTotalTime();
+        int stopIndex = stopList.indexOf(currentStop);
 
-        // Calculate per-stop time
-        int perStopTime = totalTime / stopList.size();
+        // Calculate remaining time based on the current stop index
+        int remainingTime = totalTime - (stopIndex * (totalTime / stopList.size()));
 
-        // Calculate remaining time based on the stop index
-        final int remainingTime = perStopTime * (stopList.size() - stopIndex);
-
-        // If it's the last stop, set time to "1-2 mins"
-        final int finalRemainingTime = (stopIndex == stopList.size() - 1) ? 1 : remainingTime;
-
-        // Update the total time dynamically, decreasing as the user progresses through the stops
-        runOnUiThread(() -> {
-            // Dynamically update time based on stop progression
-            txtTotalTime.setText("Time: " + finalRemainingTime + " min");
-        });
+        runOnUiThread(() -> txtTotalTime.setText("Time: " + remainingTime + " min"));
     }
-
-
 
     @Override
     protected void onDestroy() {
