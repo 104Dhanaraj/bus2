@@ -16,7 +16,7 @@ import com.example.bus.user.UserActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button Admin;
+    Button Admin,btnUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btnUser = findViewById(R.id.btn_user);
+        btnUser = findViewById(R.id.btn_user);
         btnUser.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, UserActivity.class)));
 
     }

@@ -1,28 +1,26 @@
 package com.example.bus.user;
 
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.bus.R;
 import com.example.bus.model.Bus;
 import com.example.bus.model.Route;
+import com.example.bus.model.Stop;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class BusStopsActivity extends AppCompatActivity {
     private TextView txtSelectedBus, txtFare, txtTotalTime;
     private ListView stopListView;
     private List<String> stopNames;
-    private List<double[]> stopCoordinates;
     private String selectedSource, selectedDestination;
     private Bus selectedBus;
 
@@ -40,48 +38,67 @@ public class BusStopsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         selectedSource = intent.getStringExtra("source");
         selectedDestination = intent.getStringExtra("destination");
-        String busJson = intent.getStringExtra("buses");
+        String busJson = intent.getStringExtra("selectedBus");
 
-        Type busListType = new TypeToken<ArrayList<Bus>>() {}.getType();
-        List<Bus> busList = new Gson().fromJson(busJson, busListType);
+        selectedBus = new Gson().fromJson(busJson, Bus.class);
 
-        if (busList == null || busList.isEmpty()) {
-            Toast.makeText(this, "No buses found!", Toast.LENGTH_SHORT).show();
+        if (selectedBus == null) {
+            Toast.makeText(this, "Error: No bus data received!", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        selectedBus = busList.get(0); // Default to the first bus in the list
+        // Debugging logs
+        Log.d("DEBUG", "Selected Bus: " + selectedBus.getBusName());
+        Log.d("DEBUG", "Source: " + selectedSource + ", Destination: " + selectedDestination);
 
-        txtSelectedBus.setText("Bus: " + selectedBus.getBusName());
-        txtFare.setText("Fare: $" + selectedBus.getFare());
-        txtTotalTime.setText("Time: " + selectedBus.getTotalTime() + " min");
-
+        // Load stops and update UI
         loadStopsForSelectedRoute();
     }
 
     private void loadStopsForSelectedRoute() {
         List<Route> routes = loadRoutesFromStorage();
         stopNames = new ArrayList<>();
-        stopCoordinates = new ArrayList<>();
+
+        if (routes == null || routes.isEmpty()) {
+            Toast.makeText(this, "No route data available!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         for (Route route : routes) {
             if (route.getRouteName().equals(selectedBus.getAssignedRoute())) {
-                List<String> stops = route.getStops();
-                Map<String, double[]> stopLocations = route.getStopLocations();
+                List<Stop> stops = route.getStops();
 
-                boolean startAdding = false;
-                for (String stop : stops) {
-                    if (stop.equals(selectedSource)) {
-                        startAdding = true;
+                int sourceIndex = -1, destinationIndex = -1;
+                for (int i = 0; i < stops.size(); i++) {
+                    if (stops.get(i).getName().equals(selectedSource)) {
+                        sourceIndex = i;
                     }
-                    if (startAdding) {
-                        stopNames.add(stop);
-                        stopCoordinates.add(stopLocations.get(stop));
+                    if (stops.get(i).getName().equals(selectedDestination)) {
+                        destinationIndex = i;
                     }
-                    if (stop.equals(selectedDestination)) {
-                        break;
+                }
+
+                if (sourceIndex != -1 && destinationIndex != -1 && sourceIndex < destinationIndex) {
+                    for (int i = sourceIndex; i <= destinationIndex; i++) {
+                        stopNames.add(stops.get(i).getName());
                     }
+
+                    // Calculate fare and time dynamically
+                    int totalStops = stops.size() - 1;
+                    int travelStops = destinationIndex - sourceIndex;
+                    double adjustedFare = (selectedBus.getFare() / totalStops) * travelStops;
+                    int adjustedTime = (selectedBus.getTotalTime() / totalStops) * travelStops;
+
+                    // Update UI with dynamic values
+                    txtSelectedBus.setText("Bus: " + selectedBus.getBusName());
+                    txtFare.setText("Fare: ₹" + String.format("%.2f", adjustedFare));
+                    txtTotalTime.setText("Time: " + adjustedTime + " min");
+
+                    Log.d("DEBUG", "Adjusted Fare: ₹" + adjustedFare + ", Adjusted Time: " + adjustedTime + " min");
+                } else {
+                    Toast.makeText(this, "Invalid route selection!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
             }
         }

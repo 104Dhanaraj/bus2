@@ -1,32 +1,30 @@
 package com.example.bus.model;
 
 import java.util.List;
-import java.util.Map;
 
 public class Route {
     private String routeName;
-    private List<String> stops;
-    private Map<String, double[]> stopLocations; // Stores GPS coordinates for each stop
+    private List<Stop> stops;
 
-    public Route(String routeName, List<String> stops, Map<String, double[]> stopLocations) {
+    public Route(String routeName, List<Stop> stops) {
         this.routeName = routeName;
         this.stops = stops;
-        this.stopLocations = stopLocations; // ✅ Fixed initialization issue
     }
 
     public String getRouteName() {
         return routeName;
     }
 
-    public List<String> getStops() {
+    public List<Stop> getStops() {
         return stops;
     }
 
-    public Map<String, double[]> getStopLocations() {
-        return stopLocations;
-    }
-
-    public double[] getStopLocation(String stopName) {
-        return stopLocations != null ? stopLocations.get(stopName) : null; // ✅ Prevents NullPointerException
+    public Stop getStop(String stopName) {
+        for (Stop stop : stops) {
+            if (stop.getName().equals(stopName)) {
+                return stop;
+            }
+        }
+        return null; // Stop not found
     }
 }
