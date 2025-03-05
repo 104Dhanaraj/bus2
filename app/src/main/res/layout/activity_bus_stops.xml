@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Bus Info Section -->
+    <TextView
+        android:id="@+id/txt_selected_bus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bus Information"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/txt_fare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fare: $0.00"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/txt_total_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Time: 0 min"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:paddingBottom="10dp" />
+
+    <!-- List of Stops -->
+    <ListView
+        android:id="@+id/list_stops"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:padding="5dp" />
+
+    <!-- Start Announcements Button -->
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Announcements"
+        android:textSize="16sp"
+        android:background="@android:color/holo_blue_dark"
+        android:textColor="@android:color/white"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>
