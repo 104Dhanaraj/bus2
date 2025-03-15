@@ -1,5 +1,6 @@
 package com.example.bus;
 
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,34 +12,39 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.bus.admin.AdminActivity;
-import com.example.bus.user.UserActivity;
-
 public class MainActivity extends AppCompatActivity {
-
-    Button Admin,btnUser;
+    Button Login,reg,admin;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        Admin=findViewById(R.id.Adm);
-        Admin.setOnClickListener(new View.OnClickListener() {
+        Login=findViewById(R.id.btnLogin);
+        reg=findViewById(R.id.btnSignup);
+        admin=findViewById(R.id.btnAdminLogin);
+        Login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i=new Intent(MainActivity.this, AdminActivity.class);
+                Intent i=new Intent(MainActivity.this,LoginActivity.class);
                 startActivity(i);
             }
         });
 
-        btnUser = findViewById(R.id.btn_user);
-        btnUser.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, UserActivity.class)));
+        reg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i=new Intent(MainActivity.this,RegisterActivity.class);
+                startActivity(i);
+            }
+        });
 
+        admin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i=new Intent(MainActivity.this,AdminLoginActivity.class);
+                startActivity(i);
+            }
+        });
     }
 }
