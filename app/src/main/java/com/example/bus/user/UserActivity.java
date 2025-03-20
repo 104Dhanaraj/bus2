@@ -165,9 +165,12 @@ public class UserActivity extends AppCompatActivity {
     private void showAvailableBuses(List<String> busInfoList, List<Bus> matchingBuses) {
         txtAvailableBuses.setVisibility(View.VISIBLE);
         listViewBuses.setVisibility(View.VISIBLE);
+//
+////        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, busInfoList);
+////        listViewBuses.setAdapter(adapter);
+            BusListAdapter adapter = new BusListAdapter(this, matchingBuses);
+            listViewBuses.setAdapter(adapter);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, busInfoList);
-        listViewBuses.setAdapter(adapter);
 
         listViewBuses.setOnItemClickListener((parent, view, position, id) -> {
             Bus selectedBus = matchingBuses.get(position);
