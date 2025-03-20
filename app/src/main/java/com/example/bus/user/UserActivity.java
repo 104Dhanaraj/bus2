@@ -3,7 +3,6 @@ package com.example.bus.user;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -112,7 +111,6 @@ public class UserActivity extends AppCompatActivity {
 
     private void findAvailableBuses() {
         List<Bus> matchingBuses = new ArrayList<>();
-        List<String> busInfoList = new ArrayList<>();
 
         for (Bus bus : buses) {
             for (Route route : routes) {
@@ -136,10 +134,9 @@ public class UserActivity extends AppCompatActivity {
                         double adjustedFare = (bus.getFare() / totalStops) * travelStops;
                         int adjustedTime = (bus.getTotalTime() / totalStops) * travelStops;
 
-                        String busInfo = bus.getBusName() + " | Fare: ₹" + String.format("%.2f", adjustedFare) +
-                                " | Time: " + adjustedTime + " mins";
+                        bus.setAdjustedTime(adjustedTime);
+                        bus.setAdjustedFare(adjustedFare);
 
-                        busInfoList.add(busInfo);
                         matchingBuses.add(bus);
                     }
                 }
@@ -149,6 +146,17 @@ public class UserActivity extends AppCompatActivity {
         if (matchingBuses.isEmpty()) {
             Toast.makeText(this, "No buses found for selected route", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        // Sort buses by TotalTime (ascending order)
+        matchingBuses.sort((b1, b2) -> Integer.compare(b1.getAdjustedTime(), b2.getAdjustedTime()));
+
+        // Prepare list for display
+        List<String> busInfoList = new ArrayList<>();
+        for (Bus bus : matchingBuses) {
+            String busInfo = bus.getBusName() + " | Fare: ₹" + String.format("%.2f", bus.getAdjustedFare()) +
+                    " | Time: " + bus.getAdjustedTime() + " mins";
+            busInfoList.add(busInfo);
         }
 
         showAvailableBuses(busInfoList, matchingBuses);
@@ -170,5 +178,4 @@ public class UserActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
 }
